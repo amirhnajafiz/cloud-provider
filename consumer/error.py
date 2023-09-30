@@ -1,0 +1,2 @@
+class QemuException(Exception):
+    pass
