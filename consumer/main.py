@@ -1,6 +1,10 @@
 import pika
-from pathlib import Path
 import subprocess
+import os
+import uuid
+import sys
+import json
+from pathlib import Path
 
 from error import QemuException
 
@@ -33,17 +37,42 @@ def create_vm(vm_id: str, image_name: str) -> Path:
         'qemu-img', 'create', '-f', 'qcow2',
         '-b', str(base_image.absolute()), '-F', 'qcow2', str(user_image)])
     if create_img_result.returncode != 0:
-        raise QemuException(f'Could not create image for VM "{vm_id}"')
+        raise QemuException(f'could not create image for VM "{vm_id}"')
 
     return user_image
 
 
 # call back method for rabbitmq consumer
-def callback(ch, method, properties, body):
-    print('Received message: ' + body.decode('utf-8'))
-    ch.basic_ack(delivery_tag=method.delivery_tag)
+def callback(channel_instance, method, properties, body):
+    message = body.decode('utf-8')
+    print('received message: ' + message)
+
+    data = json.loads(message)
+
+    if 'command' in data and data['command'] == 'start-vm':
+        vm_id = str(uuid.uuid4())
+        print(f'starting VM "{vm_id}"')
+
+        try:
+            image_name = os.path.basename(data['options']['image'])
+        except KeyError:
+            print('image not specified', file=sys.stderr)
+            return
+
+        try:
+            user_image = create_vm(vm_id, image_name)
+        except (OSError, QemuException) as e:
+            print(str(e), file=sys.stderr)
+            return
+
+        p = subprocess.Popen([
+            'qemu-system-x86_64', '-m', '4096', '-hda', str(user_image)])
+        print(f'started VM "{vm_id}" as process ID {p.pid}')
+
+    channel_instance.basic_ack(delivery_tag=method.delivery_tag)
 
 
+# start consuming
 channel.basic_consume(queue=QUEUE_NAME, on_message_callback=callback)
 
 channel.start_consuming()
