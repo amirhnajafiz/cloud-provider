@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from error import QemuException
+import interfaces
 
 
 # rabbitMQ topic name
@@ -74,5 +75,15 @@ def callback(channel_instance, method, properties, body):
 
 # start consuming
 channel.basic_consume(queue=QUEUE_NAME, on_message_callback=callback)
+
+if not interfaces.check_device_existence('br0'):
+    # br0 is the name of the bridge interfaces that will be created
+    #     (can be anything)
+    # enp0s25 is the name of your ethernet network, often eth0
+    # 192.168.0.10/24 is the IP of your computer in the local network including
+    #     subnet mask
+    # 192.168.2.1 is the IP of your network gateway, in local networks usually
+    #     your router
+    interfaces.init_bridge('br0', 'enp0s25', '192.168.0.10/24', '192.168.0.1')
 
 channel.start_consuming()
