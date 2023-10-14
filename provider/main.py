@@ -1,5 +1,7 @@
 import pika
 import json
+import argparse
+import sys
 
 
 # rabbitMQ topic name
@@ -50,3 +52,31 @@ class ServerCommunication:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.connection.close()
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Cloud Provider')
+    subparsers = parser.add_subparsers(dest='subparser_name')
+    create_vm_parser = subparsers.add_parser('start-vm')
+    create_vm_parser.add_argument(
+        '--image', help='Name of the image to start', required=True)
+    subparsers.add_parser('list-vms')
+    args = parser.parse_args()
+
+    if args.subparser_name == 'list-vms':
+        data = {
+            'command': 'list-vms',
+        }
+    elif args.subparser_name == 'start-vm':
+        data = {
+            'command': 'start-vm',
+            'options': {
+                'image': args.image,
+            }
+        }
+    else:
+        print('Command does not exist', file=sys.stderr)
+        sys.exit(1)
+
+    with ServerCommunication() as c:
+        result = c.send_msg(data)
