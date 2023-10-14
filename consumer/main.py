@@ -156,4 +156,6 @@ if not interfaces.check_device_existence('br0'):
     #     your router
     interfaces.init_bridge('br0', 'enp0s25', '192.168.0.10/24', '192.168.0.1')
 
+print("started ...")
+
 channel.start_consuming()

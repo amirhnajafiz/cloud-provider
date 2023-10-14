@@ -23,10 +23,21 @@ checks the input request and calls fallback functions.
 | make publish | -> | consume by consumer | -> | callback function based on request |
 ```
 
+## Setup
+
+Create an ```env``` variable for your rabbitMQ address:
+
+```shell
+export RABBIT_HOST=localhost
+```
+
+Now start the consumer by ```python consumer/main.py```. You can work with
+provider as ```CLI``` for sending your requests.
+
 ### commands
 
 In the following list you can see ```CLI``` commands:
 
-- ```start-vm --image [image name]```
-- ```list-vm```
-- ```stop-vm --vm-id [id returned in list-vm]```
+- ```python provider/main.py start-vm --image [image name]```
+- ```python provider/main.py list-vm```
+- ```python provider/main.py stop-vm --vm-id [id returned in list-vm]```
