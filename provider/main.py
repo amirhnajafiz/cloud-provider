@@ -71,6 +71,9 @@ if __name__ == '__main__':
     create_vm_parser = subparsers.add_parser('start-vm')
     create_vm_parser.add_argument(
         '--image', help='Name of the image to start', required=True)
+    create_vm_parser = subparsers.add_parser('stop-vm')
+    create_vm_parser.add_argument(
+        '--vm-id', dest='vm_id', help='ID of the VM to stop', required=True)
     subparsers.add_parser('list-vms')
     args = parser.parse_args()
 
@@ -85,6 +88,15 @@ if __name__ == '__main__':
             'command': 'start-vm',
             'options': {
                 'image': args.image,
+            }
+        }
+    elif args.subparser_name == 'stop-vm':
+        response_expected = True
+        data = {
+            'command': 'stop-vm',
+            'options': {
+                'kill': True,
+                'vm-id': args.vm_id,
             }
         }
     else:
