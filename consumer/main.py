@@ -52,7 +52,9 @@ def callback(channel_instance, method, properties, body):
 
     data = json.loads(message)
 
-    if 'command' in data and data['command'] == 'start-vm':
+    if 'command' not in data:
+        return
+    elif data['command'] == 'start-vm':
         vm_id = ''.join(random.choice(string.ascii_lowercase) for _ in range(8))
         print(f'starting VM "{vm_id}"')
 
