@@ -5,6 +5,7 @@ import random
 import string
 import sys
 import json
+import psutil
 from pathlib import Path
 
 from error import QemuException
