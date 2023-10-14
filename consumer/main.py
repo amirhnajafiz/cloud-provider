@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import pika
 import subprocess
@@ -58,6 +58,15 @@ def list_vms() -> List[str]:
     return vms
 
 
+# return the process of a vm
+def get_process_for_vm(vm_id: str) -> Optional[psutil.Process]:
+    for proc in psutil.process_iter(['name']):
+        if proc.name() == vm_id:
+            return proc
+
+    return None
+
+
 # call back method for rabbitmq consumer
 def callback(channel_instance, method, properties, body):
     message = body.decode('utf-8')
@@ -70,6 +79,25 @@ def callback(channel_instance, method, properties, body):
         return
     elif data['command'] == 'list-vms':
         response = list_vms()
+    elif data['command'] == 'stop-vm':
+        try:
+            vm_id = data['options']['vm-id']
+        except KeyError:
+            print('VM ID not specified', file=sys.stderr)
+            return
+
+        process = get_process_for_vm(vm_id)
+        if process:
+            process.kill()
+            response = {
+                'status': 'killed',
+                'vm-id': vm_id,
+            }
+        else:
+            response = {
+                'status': 'error',
+                'reason': f'VM "{vm_id}" does not exist',
+            }
     elif data['command'] == 'start-vm':
         vm_id = ''.join(random.choice(string.ascii_lowercase) for _ in range(8))
         print(f'starting VM "{vm_id}"')
