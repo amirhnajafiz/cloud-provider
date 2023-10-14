@@ -69,10 +69,7 @@ def callback(channel_instance, method, properties, body):
     if 'command' not in data:
         return
     elif data['command'] == 'list-vms':
-        vms = []
-        for proc in psutil.process_iter(['pid', 'name']):
-            if proc.name().startswith('vm-'):
-                vms.append(proc.name())
+        response = list_vms()
     elif data['command'] == 'start-vm':
         vm_id = ''.join(random.choice(string.ascii_lowercase) for _ in range(8))
         print(f'starting VM "{vm_id}"')
@@ -106,6 +103,16 @@ def callback(channel_instance, method, properties, body):
         print(f'started VM "{vm_id}" as process ID {p.pid}')
 
     channel_instance.basic_ack(delivery_tag=method.delivery_tag)
+
+    if response is not None and properties.reply_to:
+        channel_instance.basic_publish(
+            exchange='',
+            routing_key=properties.reply_to,
+            properties=pika.BasicProperties(
+                correlation_id=properties.correlation_id
+            ),
+            body=json.dumps(response)
+        )
 
 
 # start consuming
