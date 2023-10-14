@@ -1,3 +1,4 @@
+import random
 import logging
 import subprocess
 from typing import Optional
@@ -46,3 +47,12 @@ def create_tap_device(tap_device_name, bridge_device_name, user) -> bool:
     ])
 
     return creation_ok
+
+
+def create_mac_address() -> str:
+    mac_bits = (random.getrandbits(48) | 0x020000000000) & 0xfeffffffffff
+    mac_str = '{:012x}'.format(mac_bits)
+    return ':'.join([
+        mac_str[:2], mac_str[2:4], mac_str[4:6],
+        mac_str[6:8], mac_str[8:10], mac_str[10:],
+    ])
