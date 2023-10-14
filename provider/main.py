@@ -33,8 +33,8 @@ class ServerCommunication:
     def on_response(self, ch, method, properties, body):
         print(json.loads(body))
 
-    def send_msg(self, data):
-        self.response = None
+    def send_msg(self, cdata):
+        response = None
 
         self.channel.basic_publish(
             exchange='',
@@ -43,12 +43,12 @@ class ServerCommunication:
                 reply_to='amq.rabbitmq.reply-to',
                 content_type='application/json'
             ),
-            body=json.dumps(data).encode('utf-8')
+            body=json.dumps(cdata).encode('utf-8')
         )
 
         self.channel.start_consuming()
 
-        return self.response
+        return response
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.connection.close()
@@ -78,5 +78,5 @@ if __name__ == '__main__':
         print('Command does not exist', file=sys.stderr)
         sys.exit(1)
 
-    with ServerCommunication() as c:
-        result = c.send_msg(data)
+    c = ServerCommunication()
+    c.send_msg(data)
