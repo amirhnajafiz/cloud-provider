@@ -22,3 +22,11 @@ checks the input request and calls fallback functions.
 ```
 | make publish | -> | consume by consumer | -> | callback function based on request |
 ```
+
+### commands
+
+In the following list you can see ```CLI``` commands:
+
+- ```start-vm --image [image name]```
+- ```list-vm```
+- ```stop-vm --vm-id [id returned in list-vm]```
