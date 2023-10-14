@@ -1,7 +1,8 @@
 import pika
 import subprocess
 import os
-import uuid
+import random
+import string
 import sys
 import json
 from pathlib import Path
@@ -51,7 +52,7 @@ def callback(channel_instance, method, properties, body):
     data = json.loads(message)
 
     if 'command' in data and data['command'] == 'start-vm':
-        vm_id = str(uuid.uuid4())
+        vm_id = ''.join(random.choice(string.ascii_lowercase) for _ in range(8))
         print(f'starting VM "{vm_id}"')
 
         try:
@@ -65,6 +66,14 @@ def callback(channel_instance, method, properties, body):
         except (OSError, QemuException) as e:
             print(str(e), file=sys.stderr)
             return
+
+        tap_device = f'vm-{vm_id}'
+        if not interfaces.create_tap_device(tap_device, 'br0', 'your-user'):
+            print(f'could not create tap device for VM "{vm_id}"', file=sys.stderr)
+            return
+
+        mac_addr = interfaces.create_mac_address()
+        print(f'assigning MAC address "{mac_addr}" to VM "{vm_id}"')
 
         p = subprocess.Popen([
             'qemu-system-x86_64', '-m', '4096', '-hda', str(user_image)])
