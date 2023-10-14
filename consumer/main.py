@@ -79,6 +79,7 @@ def callback(channel_instance, method, properties, body):
             'qemu-system-x86_64', '-m', '4096', '-hda', str(user_image),
             '-device', f'virtio-net-pci,netdev=pubnet,mac={mac_addr}',
             '-netdev', f'tap,id=pubnet,ifname={tap_device},script=no,downscript=no',
+            '-name', f'qemu-vm-{vm_id},process=vm-{vm_id}',
         ])
         print(f'started VM "{vm_id}" as process ID {p.pid}')
 
