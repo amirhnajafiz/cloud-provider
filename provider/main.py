@@ -29,4 +29,24 @@ class ServerCommunication:
         )
 
     def on_response(self, ch, method, properties, body):
-        pass
+        print(json.loads(body))
+
+    def send_msg(self, data):
+        self.response = None
+
+        self.channel.basic_publish(
+            exchange='',
+            routing_key=self.queue,
+            properties=pika.BasicProperties(
+                reply_to='amq.rabbitmq.reply-to',
+                content_type='application/json'
+            ),
+            body=json.dumps(data).encode('utf-8')
+        )
+
+        self.channel.start_consuming()
+
+        return self.response
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.connection.close()
