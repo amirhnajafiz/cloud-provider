@@ -54,6 +54,11 @@ def callback(channel_instance, method, properties, body):
 
     if 'command' not in data:
         return
+    elif data['command'] == 'list-vms':
+        vms = []
+        for proc in psutil.process_iter(['pid', 'name']):
+            if proc.name().startswith('vm-'):
+                vms.append(proc.name())
     elif data['command'] == 'start-vm':
         vm_id = ''.join(random.choice(string.ascii_lowercase) for _ in range(8))
         print(f'starting VM "{vm_id}"')
