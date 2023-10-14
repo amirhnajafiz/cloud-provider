@@ -16,7 +16,7 @@ import interfaces
 
 # rabbitMQ topic name
 QUEUE_NAME = 'vm-queue'
-MQTT_HOST = 'localhost'
+MQTT_HOST = os.getenv("RABBIT_HOST")
 
 BASE_IMAGE_FOLDER = Path('base_images')
 USER_IMAGE_FOLDER = Path('user_images')

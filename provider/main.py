@@ -2,11 +2,12 @@ import pika
 import json
 import argparse
 import sys
+import os
 
 
 # rabbitMQ topic name
 QUEUE_NAME = 'vm-queue'
-MQTT_HOST = 'localhost'
+MQTT_HOST = os.getenv("RABBIT_HOST")
 
 
 class ServerCommunication:
