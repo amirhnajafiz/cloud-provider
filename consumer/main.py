@@ -76,7 +76,10 @@ def callback(channel_instance, method, properties, body):
         print(f'assigning MAC address "{mac_addr}" to VM "{vm_id}"')
 
         p = subprocess.Popen([
-            'qemu-system-x86_64', '-m', '4096', '-hda', str(user_image)])
+            'qemu-system-x86_64', '-m', '4096', '-hda', str(user_image),
+            '-device', f'virtio-net-pci,netdev=pubnet,mac={mac_addr}',
+            '-netdev', f'tap,id=pubnet,ifname={tap_device},script=no,downscript=no',
+        ])
         print(f'started VM "{vm_id}" as process ID {p.pid}')
 
     channel_instance.basic_ack(delivery_tag=method.delivery_tag)
