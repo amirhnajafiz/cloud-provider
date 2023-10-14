@@ -11,6 +11,7 @@ MQTT_HOST = 'localhost'
 
 class ServerCommunication:
     def __init__(self):
+        self.responses = []
         self.queue = QUEUE_NAME
 
     def __enter__(self):
@@ -31,24 +32,34 @@ class ServerCommunication:
         )
 
     def on_response(self, ch, method, properties, body):
-        print(json.loads(body))
+        self.responses.append(json.loads(body))
+        self.channel.stop_consuming()
 
-    def send_msg(self, cdata):
-        response = None
+    def on_timeout(self):
+        self.channel.stop_consuming()
+
+    def send_msg(self, cdata, response_expected=False) -> any:
+        self.responses = []
+
+        reply_to = None
+        if response_expected:
+            reply_to = 'amq.rabbitmq.reply-to'
 
         self.channel.basic_publish(
             exchange='',
             routing_key=self.queue,
             properties=pika.BasicProperties(
-                reply_to='amq.rabbitmq.reply-to',
+                reply_to=reply_to,
                 content_type='application/json'
             ),
             body=json.dumps(cdata).encode('utf-8')
         )
 
-        self.channel.start_consuming()
+        if response_expected:
+            self.connection.call_later(5, self.on_timeout)
+            self.channel.start_consuming()
 
-        return response
+        return self.responses
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.connection.close()
@@ -79,4 +90,4 @@ if __name__ == '__main__':
         sys.exit(1)
 
     c = ServerCommunication()
-    c.send_msg(data)
+    result = c.send_msg(data)
