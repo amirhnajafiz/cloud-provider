@@ -75,10 +75,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.subparser_name == 'list-vms':
+        re = True
         data = {
             'command': 'list-vms',
         }
     elif args.subparser_name == 'start-vm':
+        re = False
         data = {
             'command': 'start-vm',
             'options': {
@@ -90,4 +92,5 @@ if __name__ == '__main__':
         sys.exit(1)
 
     c = ServerCommunication()
-    result = c.send_msg(data)
+    result = c.send_msg(data, re)
+    print(result)
