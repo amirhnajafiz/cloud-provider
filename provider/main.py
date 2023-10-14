@@ -91,7 +91,7 @@ if __name__ == '__main__':
             }
         }
     elif args.subparser_name == 'stop-vm':
-        response_expected = True
+        re = True
         data = {
             'command': 'stop-vm',
             'options': {
