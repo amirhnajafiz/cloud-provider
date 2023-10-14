@@ -1,3 +1,5 @@
+from typing import List
+
 import pika
 import subprocess
 import os
@@ -45,12 +47,24 @@ def create_vm(vm_id: str, image_name: str) -> Path:
     return user_image
 
 
+# callback method for list vm command
+def list_vms() -> List[str]:
+    vms = []
+
+    for proc in psutil.process_iter(['pid', 'name']):
+        if proc.name().startswith('vm-'):
+            vms.append(proc.name())
+
+    return vms
+
+
 # call back method for rabbitmq consumer
 def callback(channel_instance, method, properties, body):
     message = body.decode('utf-8')
     print('received message: ' + message)
 
     data = json.loads(message)
+    response = None
 
     if 'command' not in data:
         return
